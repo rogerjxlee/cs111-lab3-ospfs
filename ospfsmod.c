@@ -666,6 +666,7 @@ static int32_t
 indir2_index(uint32_t b)
 {
 	// Your code here.
+  
 	return -1;
 }
 
@@ -745,8 +746,19 @@ add_block(ospfs_inode_t *oi)
 
 	// keep track of allocations to free in case of -ENOSPC
 	uint32_t *allocated[2] = { 0, 0 };
+  uint32_t allocated_block = allocate_block();
 
 	/* EXERCISE: Your code here */
+  if(!allocated_block)
+    return -ENOSPC;
+  if (n < 10) {
+    oi->oi_direct[n] = allocated_block;
+  }
+  else if (n < 266) {
+    oi->oi_indirect[n-10];
+  }
+  else if (n < 65802) {
+  }
 	return -EIO; // Replace this line
 }
 
@@ -764,7 +776,7 @@ add_block(ospfs_inode_t *oi)
 //          instance if an indirect block that should be there isn't),
 //          then oi->oi_size should remain unchanged.
 //
-// EXERCISE: Finish off this function.
+/// EXERCISE: Finish off this function.
 //
 // Remember that you must free any indirect and doubly-indirect blocks
 // that are no longer necessary after shrinking the file.  Removing a
@@ -825,10 +837,11 @@ change_size(ospfs_inode_t *oi, uint32_t new_size)
 {
 	uint32_t old_size = oi->oi_size;
 	int r = 0;
+  uint32_t new_block_number;
 
 	while (ospfs_size2nblocks(oi->oi_size) < ospfs_size2nblocks(new_size)) {
 	        /* EXERCISE: Your code here */
-		return -EIO; // Replace this line
+		return -EIO; // Replace this line 
 	}
 	while (ospfs_size2nblocks(oi->oi_size) > ospfs_size2nblocks(new_size)) {
 	        /* EXERCISE: Your code here */
@@ -991,6 +1004,13 @@ ospfs_write(struct file *filp, const char __user *buffer, size_t count, loff_t *
 	// If the user is writing past the end of the file, change the file's
 	// size to accomodate the request.  (Use change_size().)
 	/* EXERCISE: Your code here */
+
+  if(*f_pos + count < *f_pos)
+    return -EIO;
+  else if (*f_pos >= oi->oi_size)
+    count = 0;
+  else if (*f_pos + count >= oi->oi_size)
+    count = oi->oi_size - *f_pos;
 
 	// Copy data block by block
 	while (amount < count && retval >= 0) {
@@ -1241,6 +1261,8 @@ ospfs_follow_link(struct dentry *dentry, struct nameidata *nd)
 	ospfs_symlink_inode_t *oi =
 		(ospfs_symlink_inode_t *) ospfs_inode(dentry->d_inode->i_ino);
 	// Exercise: Your code here.
+  
+  char *path;
 
 	nd_set_link(nd, oi->oi_symlink);
 	return (void *) 0;
