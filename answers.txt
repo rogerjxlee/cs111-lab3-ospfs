@@ -20,7 +20,6 @@ Name: Andrew Shih
 Student ID:  704032348
 Email: ashihe828@gmail.com
 
-TEST!
 
 # Extra credit problems
 #Extra credit problem: none
