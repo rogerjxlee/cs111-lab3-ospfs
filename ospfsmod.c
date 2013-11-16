@@ -428,6 +428,8 @@ ospfs_dir_readdir(struct file *filp, void *dirent, filldir_t filldir)
 	uint32_t f_pos = filp->f_pos;
 	int r = 0;		/* Error return value, if any */
 	int ok_so_far = 0;	/* Return value from 'filldir' */
+  uint32_t curr_file_byte_offset = 0;
+  int file_type;
 
 	// f_pos is an offset into the directory's data, plus two.
 	// The "plus two" is to account for "." and "..".
@@ -452,8 +454,19 @@ ospfs_dir_readdir(struct file *filp, void *dirent, filldir_t filldir)
 		 * the loop.  For now we do this all the time.
 		 *
 		 * EXERCISE: Your code here */
-		r = 1;		/* Fix me! */
-		break;		/* Fix me! */
+
+		//r = 1;		/* Fix me! */
+		//break;		/* Fix me! */
+
+    // Code start
+
+    curr_file_byte_offset = (f_pos - 2) * OSPFS_DIRENTRY_SIZE;
+    if(curr_file_byte_offset >= dir_oi->oi_size){
+      r = 1;
+      break;
+    }
+
+    // Code end
 
 		/* Get a pointer to the next entry (od) in the directory.
 		 * The file system interprets the contents of a
@@ -476,6 +489,31 @@ ospfs_dir_readdir(struct file *filp, void *dirent, filldir_t filldir)
 		 */
 
 		/* EXERCISE: Your code here */
+
+    od = ospfs_inode_data(dir_oi, curr_file_byte_offset);
+    entry_oi = ospfs_inode(od->od_ino);
+    if(entry_oi == NULL || od->od_ino == 0) {
+      f_pos++;
+      continue;
+    }
+    switch(entry_oi->oi_ftype)
+    {
+      case OSPFS_FTYPE_REG:
+        file_type = DT_REG;
+        break;
+      case OSPFS_FTYPE_DIR:
+        file_type = DT_DIR;
+        break;
+      case OSPFS_FTYPE_SYMLINK:
+        file_type = DT_LNK;
+        break;
+      default:
+        r = 1;
+        continue;
+        break;
+    }
+    ok_so_far = filldir(dirent, od->od_name, strlen(od->od_name), f_pos, od->od_ino, file_type);
+    f_pos++;
 	}
 
 	// Save the file position and return!
@@ -553,6 +591,18 @@ static uint32_t
 allocate_block(void)
 {
 	/* EXERCISE: Your code here */
+
+  // Code start
+
+  void *freemap = ospfs_block(OSPFS_FREEMAP_BLK);
+  uint32_t i;
+  for(i = OSPFS_FREEMAP_BLK; i < ospfs_super->os_nblocks; i++) {
+    if(bitvector_test(freemap, i));
+    return i;
+  }
+
+  // Code end
+
 	return 0;
 }
 
@@ -572,6 +622,14 @@ static void
 free_block(uint32_t blockno)
 {
 	/* EXERCISE: Your code here */
+
+  // Code start
+    
+    void * freemap = ospfs_block(OSPFS_FREEMAP_BLK);
+    bitvector_set(freemap, blockno);
+    
+  // Code end
+
 }
 
 
@@ -846,6 +904,17 @@ ospfs_read(struct file *filp, char __user *buffer, size_t count, loff_t *f_pos)
 	// Change 'count' so we never read past the end of the file.
 	/* EXERCISE: Your code here */
 
+  // Code start
+  
+  if(*f_pos + count < *f_pos)
+    return -EIO;
+  else if (*f_pos >= oi->oi_size)
+    count = 0;
+  else if (*f_pos + count >= oi->oi_size)
+    count = oi->oi_size - *f_pos;
+
+  // Code end
+
 	// Copy the data to user block by block
 	while (amount < count && retval >= 0) {
 		uint32_t blockno = ospfs_inode_blockno(oi, *f_pos);
@@ -865,8 +934,21 @@ ospfs_read(struct file *filp, char __user *buffer, size_t count, loff_t *f_pos)
 		// into user space.
 		// Use variable 'n' to track number of bytes moved.
 		/* EXERCISE: Your code here */
-		retval = -EIO; // Replace these lines
-		goto done;
+    
+		//retval = -EIO; // Replace these lines
+		//goto done;
+
+    // Code start
+    
+    uint32_t bytes_left_to_copy = count - amount;
+    uint32_t data_offset = *f_pos % OSPFS_BLKSIZE;
+    n = OSPFS_BLKSIZE - data_offset;
+    if (n > bytes_left_to_copy)
+      n = bytes_left_to_copy;
+    if (copy_to_user(buffer, data + data_offset, n) > 0)
+      return -EFAULT;
+
+    // Code end
 
 		buffer += n;
 		amount += n;
