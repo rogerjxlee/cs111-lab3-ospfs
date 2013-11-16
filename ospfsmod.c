@@ -1158,7 +1158,7 @@ ospfs_link(struct dentry *src_dentry, struct inode *dir, struct dentry *dst_dent
     return -EIO;
   if (dst_dentry -> d_name.len > OSPFS_MAXNAMELEN)
     return -ENAMETOOLONG;
-  if (find_direntry (dir_oi, dst_entry -> d_name.name, dst_entry -> d_name.len) != NULL)
+  if (find_direntry (dir_oi, dst_dentry -> d_name.name, dst_dentry -> d_name.len) != NULL)
     return -EEXIST;
   
   //create new entry
@@ -1168,8 +1168,8 @@ ospfs_link(struct dentry *src_dentry, struct inode *dir, struct dentry *dst_dent
   else if (new_entry == NULL)
     return -EIO;
   new_entry -> od_ino = src_dentry -> d_inode -> i_ino;
-  memcpy (new_entry -> od_name, dst_entry -> d_name.name, dst_dentry -> d_name.len);
-  new_entry -> od_name[dst_entry->d_name.len] = '\0';
+  memcpy (new_entry -> od_name, dst_dentry -> d_name.name, dst_dentry -> d_name.len);
+  new_entry -> od_name[dst_dentry->d_name.len] = '\0';
   src_oi-> oi_nlink++;
   return 0;
 
@@ -1269,7 +1269,7 @@ ospfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
     return -ENOSPC;
   else if (new_inode_loc == NULL)
     return -EIO;
-  ospfs_direntry_t *od = create_blank_directory(dir_oi);
+  ospfs_direntry_t *od = create_blank_direntry(dir_oi);
   if(IS_ERR(od))
     return PTR_ERR(od);
   // initialization
@@ -1278,6 +1278,7 @@ ospfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
   if(qmark && colon && colon > qmark) {
     size_t root_path_len = colon - qmark; //include ?
     size_t other_path_len = strlen(colon); //include :
+    size_t name_len;
     if(root_path_len + other_path_len > OSPFS_MAXSYMLINKLEN)
       return -ENAMETOOLONG;
     new_inode_loc->oi_size = strlen(qmark) + 1;
@@ -1285,7 +1286,9 @@ ospfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
     new_inode_loc->oi_symlink[root_path_len] = '\0';
     strncpy(new_inode_loc->oi_symlink+root_path_len+1, colon, other_path_len);
     new_inode_loc->oi_symlink[new_inode_loc->oi_size] = '\0';
-    size_t name_len = strlen(symname);
+  }
+  else {
+    name_len = strlen(symname);
     if(name_len > OSPFS_MAXSYMLINKLEN)
       return -ENAMETOOLONG;
     new_inode_loc->oi_size = name_len;
@@ -1334,7 +1337,7 @@ ospfs_follow_link(struct dentry *dentry, struct nameidata *nd)
 	// Exercise: Your code here.
   
   char *path;
-  if(oi_oi_symlink[0] != '?') {
+  if(oi->oi_symlink[0] != '?') {
     nd_set_link(nd, oi->oi_symlink);
     return (void*) 0;
   }
