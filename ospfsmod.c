@@ -1280,7 +1280,34 @@ create_blank_direntry(ospfs_inode_t *dir_oi)
 static int
 ospfs_link(struct dentry *src_dentry, struct inode *dir, struct dentry *dst_dentry) {
 	/* EXERCISE: Your code here. */
-	return -EINVAL;
+	  //START CODE
+  ospfs_inode_t *dir_oi = ospfs_inode(dir->i_no);
+  ospfs_inode_t *src_oi = ospfs_inode(src_dentry->d_inode->i_no);
+  ospfs_direntry_t *new_entry;
+
+  //error checking
+  if (dir_oi == NULL || dir_oi -> oi_ftype != OSPFS_FTYPE_DIR || src_oi -> oi_nlink + 1 == 0)
+    return -EIO;
+  if (dst_dentry -> d_name.len > OSPFS_MAXNAMELEN)
+    return -ENAMETOOLONG;
+  if (find_direntry (dir_oi, dst_dentry -> d_name.name, dst_dentry -> d_name.len) != NULL)
+    return -EEXIST;
+  
+  //create new entry
+  new_entry = create_blank_direntry (dir_oi); //NOT YET IMPLEMENTED
+  if (IS_ERR (new_entry))
+    return PTR_ERR(new_entry);
+  else if (new_entry == NULL)
+    return -EIO;
+  new_entry -> od_ino = src_dentry -> d_inode -> i_ino;
+  memcpy (new_entry -> od_name, dst_dentry -> d_name.name, dst_dentry -> d_name.len);
+  new_entry -> od_name[dst_dentry->d_name.len] = '\0';
+  src_oi-> oi_nlink++;
+  return 0;
+
+  //END CODE
+  //return -EINVAL;
+
 }
 
 // find_free_inode(void)
