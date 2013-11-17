@@ -17,7 +17,7 @@ close FOO;
         
     [ 'ls -l test/pokercats.gif | awk "{ print \$5 }"',
       "91308"
-    ],
+   ],
 
     # test writing
     # We use dd to write because it doesn't initially truncate, and it can
@@ -89,6 +89,16 @@ close FOO;
     # truncate the large file
     [ 'echo truncernated11 > test/yes.txt | ls -l test/yes.txt | awk \'{ print $5 }\' ; rm test/yes.txt',
       '15'
+    ],
+
+    # hard link
+    [ 'ln base/hello.txt test/hello-hardlink.txt ; cat test/hello-hardlink.txt',
+      'Hello, world!'
+    ],
+
+    # symbolic link
+    [ 'ln -s base/hello.txt test/hello-symlink.txt ; cat test/hello-hardlink.txt',
+      'Hello, world!'
     ],
 
 );

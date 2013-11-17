@@ -1281,8 +1281,8 @@ static int
 ospfs_link(struct dentry *src_dentry, struct inode *dir, struct dentry *dst_dentry) {
 	/* EXERCISE: Your code here. */
 	  //START CODE
-  ospfs_inode_t *dir_oi = ospfs_inode(dir->i_no);
-  ospfs_inode_t *src_oi = ospfs_inode(src_dentry->d_inode->i_no);
+  ospfs_inode_t *dir_oi = ospfs_inode(dir->i_ino);
+  ospfs_inode_t *src_oi = ospfs_inode(src_dentry->d_inode->i_ino);
   ospfs_direntry_t *new_entry;
 
   //error checking
