@@ -1433,9 +1433,11 @@ static int
 ospfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
 {
 	ospfs_inode_t *dir_oi = ospfs_inode(dir->i_ino);
-
+  
 	/* EXERCISE: Your code here. */
-   char *qmark, *colon;
+  char *qmark, *colon;
+  uint32_t entry_ino = 0;
+  ospfs_symlink_inode_t *new_inode_loc;
   // error checking similar to hard link case
 
   // add error checking here
@@ -1466,7 +1468,7 @@ ospfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
     new_inode_loc->oi_symlink[new_inode_loc->oi_size] = '\0';
   }
   else {
-    name_len = strlen(symname);
+    size_t name_len = strlen(symname);
     if(name_len > OSPFS_MAXSYMLINKLEN)
       return -ENAMETOOLONG;
     new_inode_loc->oi_size = name_len;
