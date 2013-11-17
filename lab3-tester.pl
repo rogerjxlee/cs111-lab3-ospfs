@@ -92,12 +92,12 @@ close FOO;
     ],
 
     # hard link
-    [ 'ln base/hello.txt test/hello-hardlink.txt ; cat test/hello-hardlink.txt',
+    [ 'ln test/hello.txt test/hello-hardlink ; cat test/hello-hardlink',
       'Hello, world!'
     ],
 
     # symbolic link
-    [ 'ln -s base/hello.txt test/hello-symlink.txt ; cat test/hello-hardlink.txt',
+    [ 'ln -s test/hello.txt test/hello-symlink ; cat test/hello-hardlink',
       'Hello, world!'
     ],
 

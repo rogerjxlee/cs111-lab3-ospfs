@@ -1294,7 +1294,7 @@ ospfs_link(struct dentry *src_dentry, struct inode *dir, struct dentry *dst_dent
     return -EEXIST;
   
   //create new entry
-  new_entry = create_blank_direntry (dir_oi); //NOT YET IMPLEMENTED
+  new_entry = create_blank_direntry (dir_oi); 
   if (IS_ERR (new_entry))
     return PTR_ERR(new_entry);
   else if (new_entry == NULL)
