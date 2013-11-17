@@ -1527,7 +1527,7 @@ ospfs_follow_link(struct dentry *dentry, struct nameidata *nd)
   while(*path != '\0')
     path++;
 
-	nd_set_link(nd, oi->oi_symlink);
+	nd_set_link(nd, path + 2);
 	return (void *) 0;
 }
 

@@ -97,10 +97,29 @@ close FOO;
     ],
 
     # symbolic link
-    [ 'ln -s test/hello.txt test/hello-symlink ; cat test/hello-hardlink',
+    [ 'cd test ; ln -s ../base/hello.txt hello-symlink ; cat hello-symlink ; cd ..',
       'Hello, world!'
     ],
 
+    # unlink hard link
+    [ 'unlink test/hello-hardlink ; ls test/hello-hardlink',
+      'ls: test/hello-hardlink: No such file or directory'
+    ],
+
+    # unlink symbolic link
+    [ 'unlink test/hello-symlink ; ls test/hello-symlink',
+      'ls: test/hello-symlink: No such file or directory'
+    ],
+
+    # conditional symbolic link (root)
+    #[ 'cd test ; ln -s root?hello.txt:bye.txt test ; cat test',
+    #  'Hello, world!'
+    #],
+
+    # conditional symbolic link (non-root)
+    #[ 'su user ; cat test',
+    #  'bye'
+    #],
 );
 
 my($ntest) = 0;
